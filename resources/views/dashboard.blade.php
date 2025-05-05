@@ -97,7 +97,7 @@
                 showConfirmButton: false,
                 timer: 3000
             }).then(() => {
-                window.location.href = "/logout";
+                document.getElementById('logoutForm').submit();
             });
         }, logoutAfter);
     }
