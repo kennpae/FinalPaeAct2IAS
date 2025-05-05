@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta charset="UTF-8">
     <title>Admin Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -160,16 +161,11 @@
 
 
 <div class="logout">
-    <form method="POST" action="{{ route('logout') }}" id="logoutForm">
-        @csrf
-        <button type="submit" onclick="return confirmLogout(event)">Logout</button>
-    </form>
+    <button type="button" onclick="confirmLogout()">Logout</button>
 </div>
 
 <script>
-    function confirmLogout(event) {
-        event.preventDefault(); // Prevent immediate form submission
-        
+    function confirmLogout() {
         Swal.fire({
             title: 'Are you sure?',
             text: "You will be logged out.",
@@ -180,19 +176,26 @@
             confirmButtonText: 'Logout'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Submit the form properly
-                document.getElementById('logoutForm').submit();
+                // Create a new form element
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ route('logout') }}';
+                
+                // Add CSRF token
+                const csrf = document.createElement('input');
+                csrf.type = 'hidden';
+                csrf.name = '_token';
+                csrf.value = document.querySelector('meta[name="csrf-token"]').content;
+                form.appendChild(csrf);
+                
+                // Add to body and submit
+                document.body.appendChild(form);
+                form.submit();
             }
         });
-        
-        return false; // Prevent form submission
     }
 
-    // Session timeout functionality
-    let logoutTimeout;
-    const sessionLifetimeMinutes = {{ config('session.lifetime') }};
-    const logoutAfter = sessionLifetimeMinutes * 60 * 1000;
-
+    // Update your session timeout function to use the same approach
     function resetTimer() {
         clearTimeout(logoutTimeout);
         logoutTimeout = setTimeout(() => {
@@ -203,7 +206,6 @@
                 showConfirmButton: false,
                 timer: 3000
             }).then(() => {
-                // Create a form dynamically to ensure CSRF token is included
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '{{ route('logout') }}';
@@ -219,14 +221,6 @@
             });
         }, logoutAfter);
     }
-
-    // Reset timer on activity
-    ['click', 'mousemove', 'keypress', 'scroll'].forEach(event => {
-        window.addEventListener(event, resetTimer);
-    });
-
-    // Initialize timer
-    resetTimer();
 </script>
 
 </body>
