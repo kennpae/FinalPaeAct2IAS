@@ -159,28 +159,17 @@
 </table>
 
 
-    <div class="logout">
-        <form method="POST" action="{{ route('logout') }}" id="logoutForm">
-            @csrf
-            <button type="button" onclick="confirmLogout()">Logout</button>
-        </form>
-    </div>
+<div class="logout">
+    <form method="POST" action="{{ route('logout') }}" id="logoutForm">
+        @csrf
+        <button type="submit" onclick="return confirmLogout(event)">Logout</button>
+    </form>
 </div>
 
-@if(session('success'))
 <script>
-    Swal.fire({
-        icon: 'success',
-        title: 'Success!',
-        text: '{{ session('success') }}',
-        timer: 3000,
-        showConfirmButton: false
-    });
-</script>
-@endif
-
-<script>
-    function confirmLogout() {
+    function confirmLogout(event) {
+        event.preventDefault(); // Prevent immediate form submission
+        
         Swal.fire({
             title: 'Are you sure?',
             text: "You will be logged out.",
@@ -191,28 +180,42 @@
             confirmButtonText: 'Logout'
         }).then((result) => {
             if (result.isConfirmed) {
+                // Submit the form properly
                 document.getElementById('logoutForm').submit();
             }
-        })
+        });
+        
+        return false; // Prevent form submission
     }
-</script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
+
+    // Session timeout functionality
     let logoutTimeout;
-    let sessionLifetimeMinutes = {{ config('session.lifetime') }};
-    let logoutAfter = sessionLifetimeMinutes * 60 * 1000; // in ms
+    const sessionLifetimeMinutes = {{ config('session.lifetime') }};
+    const logoutAfter = sessionLifetimeMinutes * 60 * 1000;
 
     function resetTimer() {
         clearTimeout(logoutTimeout);
         logoutTimeout = setTimeout(() => {
             Swal.fire({
                 icon: 'info',
-                title: 'Logged Out',
-                text: 'You were logged out due to inactivity.',
+                title: 'Session Expired',
+                text: 'You have been logged out due to inactivity.',
                 showConfirmButton: false,
                 timer: 3000
             }).then(() => {
-                document.getElementById('logoutForm').submit();
+                // Create a form dynamically to ensure CSRF token is included
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ route('logout') }}';
+                
+                const csrf = document.createElement('input');
+                csrf.type = 'hidden';
+                csrf.name = '_token';
+                csrf.value = document.querySelector('meta[name="csrf-token"]').content;
+                form.appendChild(csrf);
+                
+                document.body.appendChild(form);
+                form.submit();
             });
         }, logoutAfter);
     }
@@ -222,7 +225,7 @@
         window.addEventListener(event, resetTimer);
     });
 
-    // Start the timer
+    // Initialize timer
     resetTimer();
 </script>
 
