@@ -76,8 +76,17 @@
             <tr>
                 <td>{{ $user->name }}</td>
                 <td>{{ $user->email }}</td>
-                <td>{{ ucfirst($user->role) }}</td>
-                <td>{{ $user->failed_attempts }}</td>
+                <td>
+                    <form method="POST" action="{{ url('/admin/role/'.$user->id) }}">
+                        @csrf
+                        <select name="role" onchange="this.form.submit()">
+                            <option value="student" {{ $user->role === 'student' ? 'selected' : '' }}>Student</option>
+                            <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
+                            <option value="moderator" {{ $user->role === 'moderator' ? 'selected' : '' }}>Moderator</option>
+                        </select>
+                    </form>
+                </td>
+                                <td>{{ $user->failed_attempts }}</td>
                 <td>
                     @if ($user->is_locked)
                         Locked
@@ -127,6 +136,28 @@
             @endforeach
         </tbody>
     </table>
+    <h3>Admin Action Logs</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Admin</th>
+            <th>Action</th>
+            <th>IP Address</th>
+            <th>Timestamp</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach ($adminLogs as $log)
+        <tr>
+            <td>{{ $log->admin_email }}</td>
+            <td>{{ $log->action }}</td>
+            <td>{{ $log->ip_address }}</td>
+            <td>{{ $log->created_at }}</td>
+        </tr>
+        @endforeach
+    </tbody>
+</table>
+
 
     <div class="logout">
         <form method="POST" action="{{ route('logout') }}" id="logoutForm">

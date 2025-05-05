@@ -24,6 +24,9 @@ class User extends Authenticatable
         'role',
         'failed_attempts',
         'is_locked',
+        'mfa_code',          // ✅ ADD THIS
+        'mfa_expires_at',    // ✅ ADD THIS
+        'is_mfa_verified',   // ✅ ADD THIS
     ];
     
 
