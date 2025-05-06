@@ -208,7 +208,7 @@
             }).then(() => {
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '{{ route('logout') }}';
+                form.action = '{{ secure_url(route('logout')) }}';  // Changed here
                 
                 const csrf = document.createElement('input');
                 csrf.type = 'hidden';
